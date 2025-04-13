@@ -1,0 +1,11 @@
+[project]
+name = "vocalstream"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastrtc[stt,tts,vad]>=0.0.20",
+    "misaki[zh]>=0.9.4",
+    "openai>=1.73.0",
+]
