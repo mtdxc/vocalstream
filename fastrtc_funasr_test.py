@@ -1,8 +1,9 @@
 from fastrtc_funasr import get_stt_model
-from fastrtc import Stream, ReplyOnPause,get_tts_model
+from fastrtc import Stream, ReplyOnPause # get_tts_model
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
+from kokoro_zh import get_tts_model
 
 # 加载环境变量
 load_dotenv()

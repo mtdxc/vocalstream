@@ -31,6 +31,7 @@ kokoro = Kokoro(model_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\kokoro
             voices_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\voices-v1.1-zh.bin", 
             vocab_config="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\config.json")
 phonemes, _ = g2p(text)
+print(phonemes)
 samples, sample_rate = kokoro.create(phonemes, voice=voice, speed=1.0, is_phonemes=True)
 sf.write("audio.wav", samples, sample_rate)
 print("Created audio.wav")

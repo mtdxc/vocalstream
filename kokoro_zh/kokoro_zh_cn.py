@@ -9,6 +9,7 @@ import numpy as np
 from huggingface_hub import hf_hub_download
 from numpy.typing import NDArray
 from misaki import zh
+from kokoro_onnx import Kokoro
 
 class TTSOptions:
     pass
@@ -92,14 +93,14 @@ class KokoroFixedBatchSize:
 
 class KokoroTTSModel(TTSModel):
     def __init__(self):
-        from kokoro_onnx import Kokoro
 
         self.model = Kokoro(
             # model_path=hf_hub_download("fastrtc/kokoro-onnx", "kokoro-v1.0.onnx"),
             # voices_path=hf_hub_download("fastrtc/kokoro-onnx", "voices-v1.0.bin"),
             # 设置自定义模型位置
             model_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\kokoro-v1.1-zh.onnx",
-            voices_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\voices-v1.1-zh.bin"
+            voices_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\voices-v1.1-zh.bin",
+            vocab_config="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\config.json"
         )
         # 仅针对中文
         self.g2p = zh.ZHG2P(version="1.1")
@@ -112,7 +113,7 @@ class KokoroTTSModel(TTSModel):
         txt, _ = self.g2p(text)
         # 结果与速率
         a, b = self.model.create(
-            txt, voice=options.voice, speed=options.speed, # lang=options.lang
+            txt, voice=options.voice, speed=options.speed, is_phonemes=True # lang=options.lang,
         )
         return b, a
 
@@ -121,17 +122,18 @@ class KokoroTTSModel(TTSModel):
     ) -> AsyncGenerator[tuple[int, NDArray[np.float32]], None]:
         options = options or KokoroTTSOptions()
 
-        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        # 修改分句正则表达式，增加中文标点支持
+        sentences = re.split(r"(?<=[.!?。！？])\s*", text.strip())
 
         for s_idx, sentence in enumerate(sentences):
             if not sentence.strip():
                 continue
 
             chunk_idx = 0
-            print(sentence)
+            # print(sentence)
             # 中文支持
             txt, _ = self.g2p(sentence)
-
+            print(txt)
             async for chunk in self.model.create_stream(
                 txt, voice=options.voice, speed=options.speed, # lang=options.lang
             ):
