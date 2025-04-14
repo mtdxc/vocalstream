@@ -1,17 +1,25 @@
 from fastrtc import Stream, ReplyOnPause,get_stt_model, get_tts_model
 import numpy as np
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+# 加载环境变量
+load_dotenv()
+
+stt_model = get_stt_model()
+tts_model = get_tts_model()
+
+client = OpenAI(
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url=os.getenv("DEEPSEEK_BASE_URL")
+)
 
 # def echo(audio: tuple[int, np.ndarray]):
 #     # The function will be passed the audio until the user pauses
 #     # Implement any iterator that yields audio
 #     # See "LLM Voice Chat" for a more complete example
 #     yield audio
-
-stt_model = get_stt_model()
-tts_model = get_tts_model()
-
-client = OpenAI(api_key="sk-060d42476b2644569cbcb3b6eeacc2d2", base_url="https://api.deepseek.com")
 
 def echo(audio):
     prompt = stt_model.stt(audio)
