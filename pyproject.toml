@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "dotenv>=0.9.9",
     "fastrtc[stt,tts,vad]>=0.0.20",
     "funasr>=1.2.6",
     "misaki[zh]>=0.9.4",
