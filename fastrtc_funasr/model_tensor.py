@@ -9,6 +9,8 @@ from numpy.typing import NDArray
 from funasr import AutoModel
 from funasr.utils.postprocess_utils import rich_transcription_postprocess
 
+import torch
+
 curr_dir = Path(__file__).parent.parent
 # 模型文件路径
 MODEL_DIR = curr_dir / "Model" / "SenseVoiceSmall"
@@ -53,45 +55,49 @@ class FunasrSTT(STTModel):
             audio_np = audio_np.reshape(1, -1)
 
         try:
-            # 临时文件[目前用于测试已满足需求]
-            import tempfile
-            import soundfile as sf
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                sf.write(temp_file.name, audio_np.squeeze(0), 16000)
-                
-                res = self.model.generate(
-                    input=temp_file.name,
+            """
+            url: https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary
+            基于ModelScope进行推理
+                推理支持音频格式如下：
+                - wav文件路径，例如：data/test/audios/asr_example.wav
+                - pcm文件路径，例如：data/test/audios/asr_example.pcm
+                - wav文件url，例如：https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ASR/test_audio/asr_example_zh.wav
+                - wav二进制数据，格式bytes，例如：用户直接从文件里读出bytes数据或者是麦克风录出bytes数据。
+                - 已解析的audio音频，例如：audio, rate = soundfile.read("asr_example_zh.wav")，类型为numpy.ndarray或者torch.Tensor。
+                - wav.scp文件，
+                    ```
+                    cat wav.scp
+                    asr_example1  data/test/audios/asr_example1.wav
+                    asr_example2  data/test/audios/asr_example2.wav
+                    ...
+
+            """
+            audio_tensor = torch.from_numpy(audio_np)
+            res = self.model.generate(
+                    input=audio_tensor,
                     cache={},
-                    language=self.lang,
+                    language="auto",
                     use_itn=True,
                     batch_size_s=60,
                     merge_vad=True,
                     merge_length_s=15,
                 )
                 
-                # 检查结果格式
-                if not res or not isinstance(res, list) or len(res) == 0:
-                    print(click.style("WARN", fg="yellow") + ":\t  No transcription result")
-                    return ""
-                
-                if not isinstance(res[0], dict) or "text" not in res[0]:
-                    print(click.style("WARN", fg="yellow") + ":\t  Invalid transcription format")
-                    return ""
-                
-                text = rich_transcription_postprocess(res[0]["text"])
-                return text if text else ""
+            # 检查结果格式
+            if not res or not isinstance(res, list) or len(res) == 0:
+                print(click.style("WARN", fg="yellow") + ":\t  No transcription result")
+                return ""
+            
+            if not isinstance(res[0], dict) or "text" not in res[0]:
+                print(click.style("WARN", fg="yellow") + ":\t  Invalid transcription format")
+                return ""
+            
+            text = rich_transcription_postprocess(res[0]["text"])
+            return text if text else ""
                 
         except Exception as e:
             print(click.style("ERROR", fg="red") + f":\t  Transcription failed: {str(e)}")
             return ""
-        finally:
-            # 确保临时文件被删除
-            try:
-                import os
-                os.unlink(temp_file.name)
-            except:
-                pass
-        # return self.tokenizer.decode_batch(tokens)[0]
 
 
 
