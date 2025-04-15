@@ -135,7 +135,7 @@ class KokoroTTSModel(TTSModel):
             txt, _ = self.g2p(sentence)
             print(txt)
             async for chunk in self.model.create_stream(
-                txt, voice=options.voice, speed=options.speed, # lang=options.lang
+                txt, voice=options.voice, speed=options.speed, is_phonemes=True # lang=options.lang
             ):
                 if s_idx != 0 and chunk_idx == 0:
                     yield chunk[1], np.zeros(chunk[1] // 7, dtype=np.float32)

@@ -21,16 +21,16 @@ def echo(audio):
     prompt = stt_model.stt(audio)
     print("用户输入:",prompt)
     # print("LLM输出:",prompt)
-    # response = client.chat.completions.create(
-    #     model="deepseek-chat",
-    #     messages=[
-    #         {"role": "user", "content": prompt}
-    #     ],
-    #     stream=False
-    #     )
-    # llm_prompt = response.choices[0].message.content
-    # print("LLM输出:",llm_prompt)
-    for audio_chunk in tts_model.stream_tts_sync(prompt):
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "user", "content": prompt+",注意:回答必须为中文"}
+        ],
+        stream=False
+        )
+    llm_prompt = response.choices[0].message.content
+    print("LLM输出:",llm_prompt)
+    for audio_chunk in tts_model.stream_tts_sync(llm_prompt):
         yield audio_chunk
     
 
