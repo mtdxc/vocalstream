@@ -12,8 +12,8 @@ stt_model = get_stt_model()
 tts_model = get_tts_model()
 
 client = OpenAI(
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url=os.getenv("DEEPSEEK_BASE_URL")
+    api_key=os.getenv("LLM_API_KEY"), base_url=os.getenv("LLM_BASE_URL")
+    # api_key='ollama', base_url="http://127.0.0.1:11434/v1"
 )
 
 
@@ -22,7 +22,8 @@ def echo(audio):
     print("用户输入:",prompt)
     # print("LLM输出:",prompt)
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        # model="deepseek-chat",
+        model=os.getenv("LLM_MODEL"),
         messages=[
             {"role": "user", "content": prompt+",注意:回答必须为中文"}
         ],

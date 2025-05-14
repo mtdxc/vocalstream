@@ -11,8 +11,8 @@ from funasr.utils.postprocess_utils import rich_transcription_postprocess
 
 curr_dir = Path(__file__).parent.parent
 # 模型文件路径
-MODEL_DIR = curr_dir / "Model" / "SenseVoiceSmall"
-VAD_MODEL_DIR = curr_dir / "Model" / "speech_fsmn_vad_zh-cn-16k-common-pytorch"
+MODEL_DIR = "iic/SenseVoiceSmall"
+VAD_MODEL_DIR = "iic/speech_fsmn_vad_zh-cn-16k-common-pytorch"
 
 STT_MODELS = Literal["SenseVoiceSmall", "paraformer-zh-streaming"]
 
@@ -35,6 +35,7 @@ class FunasrSTT(STTModel):
         self.model = AutoModel(
                                 model=MODEL_DIR,
                                 vad_model=VAD_MODEL_DIR,
+                                disable_update=True,
                                 vad_kwargs={"max_single_segment_time": 30000},
                                 device="cuda:0",
                             )

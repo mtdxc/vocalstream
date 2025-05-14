@@ -98,9 +98,9 @@ class KokoroTTSModel(TTSModel):
             # model_path=hf_hub_download("fastrtc/kokoro-onnx", "kokoro-v1.0.onnx"),
             # voices_path=hf_hub_download("fastrtc/kokoro-onnx", "voices-v1.0.bin"),
             # 设置自定义模型位置
-            model_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\kokoro-v1.1-zh.onnx",
-            voices_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\voices-v1.1-zh.bin",
-            vocab_config="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\config.json"
+            model_path="Model/kokoro-v1.1-zh.onnx",
+            voices_path="Model/voices-v1.1-zh.bin",
+            vocab_config="Model/config.json"
         )
         # 仅针对中文
         self.g2p = zh.ZHG2P(version="1.1")
@@ -133,7 +133,7 @@ class KokoroTTSModel(TTSModel):
             # print(sentence)
             # 中文支持
             txt, _ = self.g2p(sentence)
-            print(txt)
+            # print(txt)
             async for chunk in self.model.create_stream(
                 txt, voice=options.voice, speed=options.speed, is_phonemes=True # lang=options.lang
             ):

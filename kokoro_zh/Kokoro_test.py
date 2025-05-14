@@ -27,9 +27,7 @@ g2p = zh.ZHG2P(version="1.1")
 
 text = "千里之行，始于足下。"
 voice = "zf_001"
-kokoro = Kokoro(model_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\kokoro-v1.1-zh.onnx",
-            voices_path="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\voices-v1.1-zh.bin", 
-            vocab_config="E:\\Code\\PythonDir\\TTS\\VocalStream\\Model\\config.json")
+kokoro = Kokoro("kokoro-v1.1-zh.onnx", "voices-v1.1-zh.bin", vocab_config="config.json")
 phonemes, _ = g2p(text)
 print(phonemes)
 samples, sample_rate = kokoro.create(phonemes, voice=voice, speed=1.0, is_phonemes=True)
