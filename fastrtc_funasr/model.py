@@ -10,12 +10,8 @@ from funasr import AutoModel
 from funasr.utils.postprocess_utils import rich_transcription_postprocess
 
 curr_dir = Path(__file__).parent.parent
-# 模型文件路径
-MODEL_DIR = "iic/SenseVoiceSmall"
-VAD_MODEL_DIR = "iic/speech_fsmn_vad_zh-cn-16k-common-pytorch"
 
 STT_MODELS = Literal["SenseVoiceSmall", "paraformer-zh-streaming"]
-
 
 class STTModel(Protocol):
     def stt(self, audio: tuple[int, NDArray[np.int16 | np.float32]]) -> str: ...
@@ -33,8 +29,8 @@ class FunasrSTT(STTModel):
     def __init__(self, model: STT_MODELS = "SenseVoiceSmall", lang: LANG_OPTIONS = "zh"):
         self.lang = lang
         self.model = AutoModel(
-                                model=MODEL_DIR,
-                                vad_model=VAD_MODEL_DIR,
+                                model="iic/SenseVoiceSmall",
+                                vad_model="iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
                                 disable_update=True,
                                 vad_kwargs={"max_single_segment_time": 30000},
                                 device="cuda:0",
@@ -54,44 +50,31 @@ class FunasrSTT(STTModel):
             audio_np = audio_np.reshape(1, -1)
 
         try:
-            # 临时文件[目前用于测试已满足需求]
-            import tempfile
-            import soundfile as sf
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                sf.write(temp_file.name, audio_np.squeeze(0), 16000)
-                
-                res = self.model.generate(
-                    input=temp_file.name,
-                    cache={},
-                    language=self.lang,
-                    use_itn=True,
-                    batch_size_s=60,
-                    merge_vad=True,
-                    merge_length_s=15,
-                )
-                
-                # 检查结果格式
-                if not res or not isinstance(res, list) or len(res) == 0:
-                    print(click.style("WARN", fg="yellow") + ":\t  No transcription result")
-                    return ""
-                
-                if not isinstance(res[0], dict) or "text" not in res[0]:
-                    print(click.style("WARN", fg="yellow") + ":\t  Invalid transcription format")
-                    return ""
-                
-                text = rich_transcription_postprocess(res[0]["text"])
-                return text if text else ""
-                
+            res = self.model.inference(
+                input=audio_np.squeeze(0),
+                cache={},
+                language=self.lang,
+                use_itn=True,
+                batch_size_s=60,
+                merge_vad=True,
+                merge_length_s=15,
+            )
+        
+            # 检查结果格式
+            if not res or not isinstance(res, list) or len(res) == 0:
+                print(click.style("WARN", fg="yellow") + ":\t  No transcription result")
+                return ""
+            
+            if not isinstance(res[0], dict) or "text" not in res[0]:
+                print(click.style("WARN", fg="yellow") + ":\t  Invalid transcription format")
+                return ""
+            
+            text = rich_transcription_postprocess(res[0]["text"])
+            return text if text else ""
+            
         except Exception as e:
             print(click.style("ERROR", fg="red") + f":\t  Transcription failed: {str(e)}")
             return ""
-        finally:
-            # 确保临时文件被删除
-            try:
-                import os
-                os.unlink(temp_file.name)
-            except:
-                pass
         # return self.tokenizer.decode_batch(tokens)[0]
 
 

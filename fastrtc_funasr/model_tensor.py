@@ -36,7 +36,7 @@ class FunasrSTT(STTModel):
         self.lang = lang
         self.model = AutoModel(
                                 model=MODEL_DIR,
-                                vad_model=VAD_MODEL_DIR,
+                                #vad_model=VAD_MODEL_DIR,
                                 vad_kwargs={"max_single_segment_time": 30000},
                                 device="cuda:0",
                             )

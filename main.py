@@ -38,4 +38,4 @@ def echo(audio):
 if __name__ == "__main__":
     # stream = Stream(ReplyOnPause(echo), modality="audio", mode="send-receive")
     stream = Stream(ReplyOnPause(echo), modality="audio", mode="send-receive")
-    stream.ui.launch()
+    stream.ui.launch(share=True)
